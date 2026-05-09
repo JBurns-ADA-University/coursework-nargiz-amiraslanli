@@ -1,0 +1,25 @@
+LOGIC OF THE PROGRAM
+
+After decoding all 15 hexadecimal instructions into ARM assembly, the logical flow of the program was reconstructed by analyzing the comparisons, conditional instructions, branches, and loop structures. The program starts by initializing several registers using MOV instructions. `R1` is initialized to `0`, `R2` to `10`, `R3` to `0`, and `R4` to `5`. These values are later used in the first loop.
+
+LOOP ANALYSIS
+
+The first loop begins with the instruction `SUBS R5, R3, R4`, which subtracts the value in `R4` from `R3` and stores the result in `R5`. Because the instruction uses the `S` bit, it also updates the CPSR condition flags (`N`, `Z`, `C`, and `V`). The following instructions use the condition code `LT` (Less Than), which checks whether the condition `N != V` is true. If the result of the subtraction is negative, the condition becomes true, so the instruction `ADDLT R0, R0, R2` executes and adds `10` to `R0`. The next instruction, `ADDLT R3, R3, #1`, increments the loop counter stored in `R3`. After this, the instruction `BLT loop` checks the same condition flags again and branches back to the start of the loop if the `LT` condition is still true. This creates a loop that continues while `R3 < R4`.
+
+The loop executes five times because `R3` starts at `0` and increases until it reaches `5`. When `R3` becomes equal to `R4`, the subtraction result becomes `0`, causing the `LT` condition to become false, so the branch is no longer taken and execution continues to the next instruction.
+
+CRASH ANALYSIS
+
+After the first loop finishes, the program reaches the instruction `BL .`. In ARM assembly, the `.` symbol represents the current instruction address. Therefore, `BL .` means “branch to the current instruction.” This creates an infinite self-branch loop where the processor repeatedly jumps back to the same instruction forever. Since the instruction is `BL` (Branch with Link), the processor also continuously updates the Link Register (`LR`) with the return address each time the instruction executes. Because the processor becomes trapped in this infinite loop, the remaining instructions in the program are never reached during normal execution. This is the main reason for the crash or hang in the program.
+
+REMAINING INSTRUCTIONS
+
+The remaining instructions include a store instruction `STR LR, [SP, #-4]!`, two MOV instructions, and another loop labeled `loop2`. The second loop repeatedly executes `ADD R6, R5, R4`, performs another subtraction using `SUBS`, and branches back using `B loop2`, creating another infinite loop structure. However, this second loop is effectively unreachable because the earlier `BL .` instruction already traps the processor in an infinite loop before execution can continue further.
+
+VIDEO EXPLANATION
+
+
+https://youtu.be/jS-UB-JSyOw
+
+
+THANK YOU FOR WATCHING.
